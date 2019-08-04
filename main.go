@@ -61,7 +61,7 @@ func main() {
 
 	for _, k := range sortedKeys {
 
-		if _, err := f.WriteString("\n ###" + k + "\n\n"); err != nil {
+		if _, err := f.WriteString("\n ### " + k + "\n\n"); err != nil {
 			log.Fatal(err)
 		}
 
@@ -83,7 +83,7 @@ func worker(wg *sync.WaitGroup, c *Client, repos <-chan Repo, results *Results) 
 	for repo := range repos {
 		r, err := c.fetchRepository(context.Background(), repo.owner, repo.name)
 		if err != nil {
-			log.Println("\n", err)
+			fmt.Printf("\n%v", err)
 			continue
 		}
 
