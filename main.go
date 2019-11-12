@@ -22,11 +22,16 @@ type Repo struct {
 func main() {
 	client := NewGithubClient()
 	lines := client.getReadmeLines(context.Background())
-	jobs := make(chan Repo, len(lines))
+	jobs := make(chan Repo, NumberOfWorkers)
 	results := &Results{m: make(map[int][]string, 0)}
 	wgRepoFetchers := sync.WaitGroup{}
 
 	fmt.Printf("Got %d lines from README.md\n", len(lines))
+
+	for i := 1; i <= NumberOfWorkers; i++ {
+		wgRepoFetchers.Add(1)
+		go worker(&wgRepoFetchers, &client, jobs, results)
+	}
 
 	//regexp to find useful lines
 	re := regexp.MustCompile(`(\* \[.*\]\(https:\/\/github\.com\/([a-zA-Z0-9-_\.]+)\/([a-zA-Z0-9-_\.]+))`)
@@ -39,15 +44,6 @@ func main() {
 	}
 	close(jobs)
 
-	results.Lock()
-	results.total = len(jobs)
-	results.Unlock()
-	fmt.Printf("%d repos in total\n", results.total)
-
-	for i := 1; i <= NumberOfWorkers; i++ {
-		wgRepoFetchers.Add(1)
-		go worker(&wgRepoFetchers, &client, jobs, results)
-	}
 	wgRepoFetchers.Wait()
 	fmt.Println()
 

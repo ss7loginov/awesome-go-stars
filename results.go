@@ -11,7 +11,6 @@ type Results struct {
 	sync.RWMutex
 	m       map[int][]string
 	fetched int
-	total   int
 }
 
 // groupedRepos returns repos grouped by the number of stars and its keys sorted in a descending order
